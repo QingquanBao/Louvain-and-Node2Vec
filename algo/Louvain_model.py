@@ -29,6 +29,7 @@ class CommunitySuperNode:
 
         self.out_total_degree = 0
         self.in_total_degree = 0
+        self.to_commu = self.name
         #self.internals = 0
         self.__init_graph__(name, edges, in_edges)
     
@@ -52,8 +53,7 @@ class CommunitySuperNode:
     def cal_delta_modu(self, m, nodex):
         assert isinstance(nodex, CommunitySuperNode)
         if len(self.community) == 0:
-            self.community.append(nodex.name) 
-            return 0
+            return -1000000
         else:
             k_i_in  = set(nodex.out_neighbors)  &  set(self.community)
             k_i_out = set(nodex.in_neighbors) &  set(self.community)
@@ -64,13 +64,14 @@ class CommunitySuperNode:
             modu -= (nodex.out_d * self.in_total_degree + nodex.in_d * self.out_total_degree ) / m**2
             return modu
 
-    def remove(self, nodex ):
+    def remove(self, m, nodex ):
         self.community.remove(nodex.name)
         if len(self.community) == 0:
-            return
+            return 0
         else:
             self.out_total_degree -= nodex.out_d
             self.in_total_degree  -= nodex.in_d
+            return self.cal_delta_modu(m, nodex)
             #self.internals -= 
 
     def append(self, nodex):
@@ -92,6 +93,7 @@ class CommunitySuperNode:
             self.in_weight += member.in_weight
             self.out_weight += member.out_weight
 
+        self.name =self.community[0]
         community_ = {old: self.name for old in self.community}
         self.community = [self.name]
         return community_
@@ -131,9 +133,10 @@ class DirectedGraph:
             self._phase1()
             num = self._phase2()
             print(num)
+            break
 
 
-    def _phase1(self, max_iter=10):
+    def _phase1(self, max_iter=1):
         stop_flag = False
         iter = 0
         # When Modularity converges, stop
@@ -141,22 +144,23 @@ class DirectedGraph:
             stop_flag = True
             iter += 1
             print(iter)
-            # iterate every node
+            # iterate very node
             for node in tqdm(self.community_list.values()):
                 # tmp
-                if node.name not in node.community: continue
+                cur_community = self.community_list[node.to_commu]
+                #if node.name not in node.community: continue
                 # tmp
                 gain_M = {}
-                node.remove(node)
-                gain_M[node.name] = node.cal_delta_modu(self.m, node )
+                gain_M[cur_community.name] = cur_community.remove(self.m, node)
                 # test every gain in Modularity
-                for neighbor in node.out_neighbors:
-                    gain_M[neighbor] = self.community_list[neighbor].cal_delta_modu(self.m, node)
-                for neighbor in node.in_neighbors:
-                    gain_M[neighbor] = self.community_list[neighbor].cal_delta_modu(self.m, node)
+                neighbors = node.out_neighbors + node.in_neighbors
+                for neighbor in neighbors:
+                    neighbor_commu = self.community_list[neighbor].to_commu
+                    gain_M[neighbor_commu] = self.community_list[neighbor_commu].cal_delta_modu(self.m, node)
                 
                 best_com = max(gain_M, key=gain_M.get)
                 self.community_list[best_com].append(node)
+                node.to_commu = best_com
                 if best_com != node.name: stop_flag = False
 
     def _phase2(self):
