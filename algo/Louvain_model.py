@@ -17,10 +17,6 @@ class CommunitySuperNode:
 
         self.in_neighbors = Counter()
         self.out_neighbors = Counter()
-        #self.in_neighbors = []
-        #self.in_weight = []
-        #self.out_neighbors = []
-        #self.out_weight = []
 
         self.out_total_degree = 0
         self.in_total_degree = 0
@@ -38,10 +34,6 @@ class CommunitySuperNode:
         self.community.append(name)
         self.in_neighbors.update({e: 1 for e in in_edges})
         self.out_neighbors.update({e: 1 for e in edges})
-        #self.in_neighbors += [e[0] for e in in_edges]
-        #self.in_weight = [1 for i in range(len(self.in_neighbors))]
-        #self.out_neighbors += edges
-        #self.out_weight = [1 for i in range(len(self.out_neighbors))]
         
         self.in_total_degree = len(self.in_neighbors)
         self.out_total_degree = len(self.out_neighbors)
@@ -53,10 +45,6 @@ class CommunitySuperNode:
         if len(self.community) == 0:
             return -1000000
         else:
-            #k_i_in  = set(nodex.out_neighbors)  &  set(self.community)
-            #k_i_out = set(nodex.in_neighbors) &  set(self.community)
-            #d_i_in = sum([ nodex.out_weight[nodex.out_neighbors.index(n)] for n in k_i_in ])
-            #d_i_out = sum([ nodex.in_weight[nodex.in_neighbors.index(n)] for n in k_i_out ])
             d_i_in = sum( [nodex.out_neighbors[key] if  graph.community_list[key].to_commu == self.name else 0 \
                            for key in nodex.out_neighbors.keys() ] )
             d_i_out = sum( [nodex.in_neighbors[key] if  graph.community_list[key].to_commu == self.name else 0 \
@@ -74,7 +62,6 @@ class CommunitySuperNode:
             return 0
         else:
             return self.cal_delta_modu(m, nodex, graph)
-            #self.internals -= 
 
     def append(self, nodex):
         # only use for phase1, so we do not need to append node_list 
@@ -187,6 +174,5 @@ class DirectedGraph:
         for node in new_community:
             new_community[node].update(old2new)
 
-        #new = {key: self.community_list[key] for key in new_community}
         self.community_list = new_community
         return len(self.community_list)

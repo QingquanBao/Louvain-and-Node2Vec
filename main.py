@@ -7,8 +7,7 @@ Created on Mon Nov 22 11:1'4':09 2021
 """
 import networkx as nx
 import pickle
-import pandas as pd
-from Louvain_model import DirectedGraph 
+from algo.Louvain_model import DirectedGraph 
 from collections import Counter, defaultdict
 
 def read_csv(file_name):
@@ -95,5 +94,5 @@ if __name__ == '__main__':
     with open("trial3.txt", "wb") as fp:   #Pickling
         pickle.dump(final_res, fp)
 
-    to_csv(final_res, 'trial3.csv')
+    to_csv(final_res, 'final_res.csv')
     print('2nd acc= ', eval(final_res,gt))
